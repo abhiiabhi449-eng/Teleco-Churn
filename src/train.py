@@ -12,3 +12,17 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 print(X_train.shape, X_test.shape)
 print(y_train.mean(), y_test.mean())
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, classification_report
+
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print(classification_report(y_test, y_pred))
+
+from sklearn.metrics import confusion_matrix
+print(confusion_matrix(y_test, y_pred))
