@@ -43,3 +43,8 @@ import os
 os.makedirs("models", exist_ok=True)
 joblib.dump(best, "models/churn_model.pkl")
 print("Model saved")
+
+import json
+
+with open("models/columns.json", "w") as f:
+    json.dump(list(X.columns), f)
