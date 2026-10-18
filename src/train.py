@@ -1,4 +1,9 @@
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from prepare import load_and_prepare
 
 df = load_and_prepare()
@@ -10,19 +15,24 @@ X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
 
-print(X_train.shape, X_test.shape)
-print(y_train.mean(), y_test.mean())
+models = {
+    "Logistic Regression": make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000)),
+    "Random Forest": RandomForestClassifier(n_estimators=200, random_state=42),
+}
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    print("=====", name, "=====")
+    print("Accuracy:", accuracy_score(y_test, y_pred))
+    print(classification_report(y_test, y_pred))
+    print(confusion_matrix(y_test, y_pred))
 
-model = LogisticRegression(max_iter=1000)
-model.fit(X_train, y_train)
+    best = models["Logistic Regression"]
+proba = best.predict_proba(X_test)[:, 1]
 
-y_pred = model.predict(X_test)
-
-print("Accuracy:", accuracy_score(y_test, y_pred))
-print(classification_report(y_test, y_pred))
-
-from sklearn.metrics import confusion_matrix
-print(confusion_matrix(y_test, y_pred))
+for threshold in [0.5, 0.4, 0.3]:
+    y_pred = (proba >= threshold).astype(int)
+    print("Threshold", threshold)
+    print(classification_report(y_test, y_pred))
+    print(confusion_matrix(y_test, y_pred))
