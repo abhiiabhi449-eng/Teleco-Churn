@@ -36,3 +36,10 @@ for threshold in [0.5, 0.4, 0.3]:
     print("Threshold", threshold)
     print(classification_report(y_test, y_pred))
     print(confusion_matrix(y_test, y_pred))
+
+import joblib
+import os
+
+os.makedirs("models", exist_ok=True)
+joblib.dump(best, "models/churn_model.pkl")
+print("Model saved")
