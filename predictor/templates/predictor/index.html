@@ -3,8 +3,69 @@
 <head>
     <title>Churn Predictor</title>
 </head>
+    <script>
+        function predict() {
+            var tenure = Number(document.getElementById("tenure").value);
+            var monthly = Number(document.getElementById("monthly").value);
+            var contract = document.getElementById("contract").value;
+
+            var data = {
+                tenure: tenure,
+                MonthlyCharges: monthly,
+                TotalCharges: tenure * monthly
+            };
+            if (contract == "one") { data["Contract_One year"] = 1; }
+            if (contract == "two") { data["Contract_Two year"] = 1; }
+
+            var internet = document.getElementById("internet").value;
+            var payment = document.getElementById("payment").value;
+            if (internet == "fiber") { data["InternetService_Fiber optic"] = 1; }
+            if (payment == "echeck") { data["PaymentMethod_Electronic check"] = 1; }
+            
+            fetch("/api/predict/", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(data)
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(result) {
+                var percent = Math.round(result.churn_probability * 100);
+                var text = result.prediction == 1 ? "likely to leave" : "likely to stay";
+                document.getElementById("result").innerText =
+                    "Churn risk: " + percent + "% - " + text;
+            });
+        }
+    </script>
 <body>
     <h1>Customer Churn Predictor</h1>
-    <p>This page will predict if a customer will leave.</p>
+
+    <p>Tenure (months):</p>
+    <input type="number" id="tenure" value="2">
+
+    <p>Monthly charges:</p>
+    <input type="number" id="monthly" value="70">
+
+    <p>Contract:</p>
+    <select id="contract">
+        <option value="month">Month-to-month</option>
+        <option value="one">One year</option>
+        <option value="two">Two year</option>
+    </select>
+
+        <p>Internet service:</p>
+    <select id="internet">
+        <option value="none">None / DSL</option>
+        <option value="fiber">Fiber optic</option>
+    </select>
+
+    <p>Payment method:</p>
+    <select id="payment">
+        <option value="other">Other</option>
+        <option value="echeck">Electronic check</option>
+    </select>
+
+    <br><br>
+    <button onclick="predict()">Predict</button>
+    <h2 id="result"></h2>
 </body>
 </html>
