@@ -4,6 +4,7 @@ from pathlib import Path
 import joblib
 import pandas as pd
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,6 +16,10 @@ with open(BASE_DIR / "models" / "columns.json") as f:
 
 def hello(request):
     return JsonResponse({"message": "Hello from the churn API"})
+
+
+def home(request):
+    return render(request, "predictor/index.html")
 
 
 @csrf_exempt
