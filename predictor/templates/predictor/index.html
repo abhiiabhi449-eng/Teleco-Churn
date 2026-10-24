@@ -1,71 +1,159 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Churn Predictor</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #faf7f2; color: #333;
+               display: flex; flex-direction: column; min-height: 100vh; }
+        header { background: #800000; color: white; padding: 16px 30px;
+                 display: flex; justify-content: space-between; align-items: center; }
+        header h1 { margin: 0; font-size: 22px; }
+        nav a { color: white; text-decoration: none; margin-left: 22px; font-weight: bold;
+                cursor: pointer; padding-bottom: 4px; }
+        nav a:hover { border-bottom: 2px solid white; }
+        main { flex: 1; max-width: 800px; width: 100%; margin: 30px auto; padding: 0 20px;
+               box-sizing: border-box; }
+        .page { display: none; }
+        .card { background: white; padding: 24px; border-radius: 8px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+        h2 { color: #800000; }
+        label { display: block; margin-top: 14px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-top: 6px; box-sizing: border-box;
+                        border: 1px solid #ccc; border-radius: 4px; }
+        button { margin-top: 20px; background: #800000; color: white; border: none;
+                 padding: 10px 24px; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #5c0000; }
+        #result { color: #800000; }
+        footer { background: #800000; color: white; text-align: center; padding: 18px; }
+        footer a { color: white; margin: 0 10px; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
 </head>
-    <script>
-        function predict() {
-            var tenure = Number(document.getElementById("tenure").value);
-            var monthly = Number(document.getElementById("monthly").value);
-            var contract = document.getElementById("contract").value;
-
-            var data = {
-                tenure: tenure,
-                MonthlyCharges: monthly,
-                TotalCharges: tenure * monthly
-            };
-            if (contract == "one") { data["Contract_One year"] = 1; }
-            if (contract == "two") { data["Contract_Two year"] = 1; }
-
-            var internet = document.getElementById("internet").value;
-            var payment = document.getElementById("payment").value;
-            if (internet == "fiber") { data["InternetService_Fiber optic"] = 1; }
-            if (payment == "echeck") { data["PaymentMethod_Electronic check"] = 1; }
-            
-            fetch("/api/predict/", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(data)
-            })
-            .then(function(response) { return response.json(); })
-            .then(function(result) {
-                var percent = Math.round(result.churn_probability * 100);
-                var text = result.prediction == 1 ? "likely to leave" : "likely to stay";
-                document.getElementById("result").innerText =
-                    "Churn risk: " + percent + "% - " + text;
-            });
-        }
-    </script>
 <body>
+
+<header>
     <h1>Customer Churn Predictor</h1>
+    <nav>
+        <a onclick="showPage('home')">Home</a>
+        <a onclick="showPage('predict')">Predict</a>
+        <a onclick="showPage('contact')">Contact Us</a>
+    </nav>
+</header>
 
-    <p>Tenure (months):</p>
-    <input type="number" id="tenure" value="2">
+<main>
+    <!-- HOME -->
+    <div id="home" class="page card">
+        <h2>Welcome</h2>
+        <p>This system predicts whether a telecom customer is likely to leave
+           (churn), so a company can act before the customer is lost.</p>
+        <h2>How it works</h2>
+        <p>1. A model was trained on 7,043 past customers.<br>
+           2. You enter a customer's details on the Predict page.<br>
+           3. The details are sent to a Django API, which loads the saved model.<br>
+           4. The model returns a churn risk percentage.</p>
+        <h2>What we found</h2>
+        <p>Month-to-month customers and new customers leave the most.
+           Two-year contracts almost never leave.</p>
+        <button onclick="showPage('predict')">Try a prediction</button>
+    </div>
 
-    <p>Monthly charges:</p>
-    <input type="number" id="monthly" value="70">
+    <!-- PREDICT -->
+    <div id="predict" class="page card">
+        <h2>Predict churn</h2>
 
-    <p>Contract:</p>
-    <select id="contract">
-        <option value="month">Month-to-month</option>
-        <option value="one">One year</option>
-        <option value="two">Two year</option>
-    </select>
+        <label>Tenure (months)</label>
+        <input type="number" id="tenure" value="2">
 
-        <p>Internet service:</p>
-    <select id="internet">
-        <option value="none">None / DSL</option>
-        <option value="fiber">Fiber optic</option>
-    </select>
+        <label>Monthly charges</label>
+        <input type="number" id="monthly" value="70">
 
-    <p>Payment method:</p>
-    <select id="payment">
-        <option value="other">Other</option>
-        <option value="echeck">Electronic check</option>
-    </select>
+        <label>Contract</label>
+        <select id="contract">
+            <option value="month">Month-to-month</option>
+            <option value="one">One year</option>
+            <option value="two">Two year</option>
+        </select>
 
-    <br><br>
-    <button onclick="predict()">Predict</button>
-    <h2 id="result"></h2>
+        <label>Internet service</label>
+        <select id="internet">
+            <option value="none">None / DSL</option>
+            <option value="fiber">Fiber optic</option>
+        </select>
+
+        <label>Payment method</label>
+        <select id="payment">
+            <option value="other">Other</option>
+            <option value="echeck">Electronic check</option>
+        </select>
+
+        <button onclick="predict()">Predict</button>
+        <h2 id="result"></h2>
+    </div>
+
+    <!-- CONTACT -->
+    <div id="contact" class="page card">
+        <h2>Contact Us</h2>
+        <p>Built by Abhi as a data science portfolio project.</p>
+        <p>Email: your-email@example.com<br>
+           Location: Kerala, India<br>
+           GitHub: github.com/abhiiabhi449-eng/Teleco-Churn</p>
+    </div>
+</main>
+
+<footer>
+    <p>&#9993; your-email@example.com &nbsp;|&nbsp; &#9873; Kerala, India</p>
+    <p>
+        <a href="https://github.com/abhiiabhi449-eng/Teleco-Churn" target="_blank">&#9830; GitHub</a>
+        <a href="/api/predict/">&#9881; API</a>
+        <a href="/hello/">&#10003; Status</a>
+    </p>
+    <p>&copy; 2026 Churn Predictor</p>
+</footer>
+
+<script>
+    function showPage(name) {
+        var pages = document.getElementsByClassName("page");
+        for (var i = 0; i < pages.length; i++) {
+            pages[i].style.display = "none";
+        }
+        document.getElementById(name).style.display = "block";
+    }
+
+    function predict() {
+        var tenure = Number(document.getElementById("tenure").value);
+        var monthly = Number(document.getElementById("monthly").value);
+        var contract = document.getElementById("contract").value;
+        var internet = document.getElementById("internet").value;
+        var payment = document.getElementById("payment").value;
+
+        var data = {
+            tenure: tenure,
+            MonthlyCharges: monthly,
+            TotalCharges: tenure * monthly
+        };
+        if (contract == "one") { data["Contract_One year"] = 1; }
+        if (contract == "two") { data["Contract_Two year"] = 1; }
+        if (internet == "fiber") { data["InternetService_Fiber optic"] = 1; }
+        if (payment == "echeck") { data["PaymentMethod_Electronic check"] = 1; }
+
+        fetch("/api/predict/", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(data)
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(result) {
+            var percent = Math.round(result.churn_probability * 100);
+            var text = result.prediction == 1 ? "likely to leave" : "likely to stay";
+            document.getElementById("result").innerText =
+                "Churn risk: " + percent + "% - " + text;
+        });
+    }
+
+    showPage("home");
+</script>
+
 </body>
 </html>
